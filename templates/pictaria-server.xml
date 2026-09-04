@@ -1,0 +1,34 @@
+<Container version="2">
+  <Name>pictaria</Name>
+  <Repository>ghcr.io/pictaria-ai/pictaria-server:latest</Repository>
+  <Registry>https://github.com/orgs/pictaria-ai/packages/container/package/pictaria-server</Registry>
+  <Network>bridge</Network>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <ExtraParams>--user=99:100</ExtraParams>
+
+  <Icon>https://raw.githubusercontent.com/pictaria-ai/pictaria-server/main/public/brand/apple-touch-icon.png</Icon>
+  <WebUI>http://[IP]:[PORT:4080]</WebUI>
+  <Overview>Pictaria Server is self-hosted photo intelligence, enrichment, curation, and automation for your Immich library. Explore your collection, optionally enrich it with AI, review your best photos, build Smart Albums that stay current, and pair it with Pictaria Frame.</Overview>
+  <Support>https://github.com/pictaria-ai/pictaria-server/issues</Support>
+  <Project>https://pictaria.ai/server</Project>
+  <TemplateURL>https://raw.githubusercontent.com/pictaria-ai/pictaria-unraid/main/templates/pictaria-server.xml</TemplateURL>
+  <ReadMe>https://raw.githubusercontent.com/pictaria-ai/pictaria-unraid/main/README.md</ReadMe>
+
+  <Category>MediaApp:Photos</Category>
+  <ExtraSearchTerms>Immich photo AI enrichment curation smart albums frame</ExtraSearchTerms>
+  <Requires>Immich 2.0 or newer, reachable from this container. When Immich runs on this Unraid server, use the server's LAN IP and Immich's published port rather than localhost. Immich Tags must be enabled for Pictaria's tag-backed features.</Requires>
+  <Changes>Initial Community Applications release.</Changes>
+  <Date>2026-09-04</Date>
+  <License>AGPL-3.0-only</License>
+
+  <Screenshot>https://raw.githubusercontent.com/pictaria-ai/pictaria-server/main/docs/images/server-insights-timeline.png</Screenshot>
+  <Screenshot>https://raw.githubusercontent.com/pictaria-ai/pictaria-server/main/docs/images/server-curate.jpg</Screenshot>
+  <Screenshot>https://raw.githubusercontent.com/pictaria-ai/pictaria-server/main/docs/images/server-albums.png</Screenshot>
+
+  <Config Name="WebUI Port" Target="4080" Default="4080" Mode="tcp" Description="HTTP port for the Pictaria web interface and API." Type="Port" Display="always" Required="true" Mask="false"/>
+  <Config Name="Appdata" Target="/data" Default="/mnt/user/appdata/pictaria" Mode="rw" Description="Persistent Pictaria settings, databases, generated state, and built-in backups." Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="Immich URL" Target="IMMICH_BASE_URL" Default="" Description="Immich URL reachable from this container, such as http://192.168.1.20:2283. Do not use localhost or include /api." Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="Immich API Key" Target="IMMICH_API_KEY" Default="" Description="Immich API key for the account whose library Pictaria will use." Type="Variable" Display="always" Required="true" Mask="true"/>
+  <Config Name="Pictaria Password" Target="APP_PASSWORD" Default="" Description="New password that protects the Pictaria web interface and API." Type="Variable" Display="always" Required="true" Mask="true"/>
+</Container>
