@@ -10,13 +10,19 @@ Pictaria Server is self-hosted photo intelligence, enrichment, curation, and aut
 2. Select the app and keep the default port and appdata path unless they conflict with another container.
 3. Enter:
    - **Immich URL** — the address Pictaria can reach from inside its container.
-   - **Immich API Key** — create one using the permissions in the [Pictaria first-run checklist](https://github.com/pictaria-ai/pictaria-server/blob/main/docs/GETTING-STARTED.md#2-connect-immich).
+   - **Immich API Key** — create one using Pictaria's documented [Immich API-key permissions](https://github.com/pictaria-ai/pictaria-server/blob/main/docs/IMMICH-COMPATIBILITY.md#api-key-permissions).
    - **Pictaria Password** — a new password that will protect Pictaria's web interface and API.
 4. Apply the template, wait for the container to become healthy, and select its **WebUI** link.
 
 When Immich runs on the same Unraid server, use the Unraid server's LAN address and Immich's published port, for example `http://192.168.1.20:2283`. Do not use `localhost` or `127.0.0.1`: inside the Pictaria container, those addresses mean Pictaria itself. Omit a trailing `/api` from the Immich URL.
 
 The template runs Pictaria without privileged access as Unraid's standard `nobody:users` account (`99:100`). Its only persistent filesystem access is the appdata path mapped to `/data`.
+
+Unraid creates a missing appdata directory with the expected ownership. If you reuse a directory that was created manually or restored from a backup, make sure it is owned by `nobody:users`. With the container stopped and the default appdata path confirmed, correct only that directory with:
+
+```sh
+chown -R nobody:users /mnt/user/appdata/pictaria
+```
 
 ## Install the template before it is listed
 
