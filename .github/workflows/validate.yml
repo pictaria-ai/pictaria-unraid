@@ -1,0 +1,73 @@
+name: Validate Unraid packaging
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Validate XML and starter cleanup
+        run: |
+          python3 -c 'import sys, xml.etree.ElementTree as ET; [ET.parse(path) for path in sys.argv[1:]]' ca_profile.xml templates/pictaria-server.xml
+          if grep -R -E 'YOUR_|REPLACE ME|example-app|example-plugin' --exclude-dir=.git --exclude=validate.yml .; then
+            echo 'Starter placeholder content remains.' >&2
+            exit 1
+          fi
+
+      - name: Verify Unraid user and appdata compatibility
+        run: |
+          set -eu
+          data_dir="${RUNNER_TEMP}/pictaria-unraid-data"
+          container_name="pictaria-unraid-test"
+
+          cleanup() {
+            docker rm -f "${container_name}" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          mkdir -p "${data_dir}"
+          sudo chown 99:100 "${data_dir}"
+
+          start_container() {
+            docker run -d \
+              --name "${container_name}" \
+              --user=99:100 \
+              -p 14080:4080 \
+              -v "${data_dir}:/data" \
+              -e IMMICH_BASE_URL=http://127.0.0.1:2283 \
+              -e IMMICH_API_KEY=unraid-ci-placeholder \
+              -e APP_PASSWORD=unraid-ci-password \
+              ghcr.io/pictaria-ai/pictaria-server:latest
+
+            for _ in $(seq 1 30); do
+              if [ "$(docker inspect --format='{{.State.Health.Status}}' "${container_name}")" = healthy ]; then
+                return 0
+              fi
+              sleep 2
+            done
+
+            docker logs "${container_name}"
+            return 1
+          }
+
+          start_container
+          health="$(curl -fsS http://127.0.0.1:14080/api/health)"
+          test "$(printf '%s' "${health}" | jq -r '.ok')" = true
+          test "$(printf '%s' "${health}" | jq -r '.authRequired')" = true
+          test -n "$(find "${data_dir}" -mindepth 1 -type f -print -quit)"
+
+          docker rm -f "${container_name}"
+          start_container
+          test "$(curl -fsS http://127.0.0.1:14080/api/health | jq -r '.ok')" = true
+          test -n "$(find "${data_dir}" -mindepth 1 -type f -print -quit)"
